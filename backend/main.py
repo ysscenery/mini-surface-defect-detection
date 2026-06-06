@@ -1,7 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-
 from services.detection_service import detect_defects
+import shutil
 
 app = FastAPI()
 
@@ -13,17 +13,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 def home():
     return {
         "message": "Mini Surface Defect Detection API"
     }
 
+@app.post("/detect")
+async def detect(file: UploadFile = File(...)):
 
-@app.get("/detect")
-def detect():
+    image_path = f"temp_{file.filename}"
 
-    image_path = "../test_images/4.jpg"
+    with open(image_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
 
     return detect_defects(image_path)
